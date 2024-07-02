@@ -1,32 +1,28 @@
 db.users.aggregate([
     {
-    $match: {
-      balance: {
-        $gte: 100,
-        $lt: 2000
-      }
+        $match: {
+          balance: {
+            $gte: 100,
+            $lt: 2000
+          }
+        }
+      },
+    {
+        $lookup: {
+            from: 'post_reactions',
+            localField: '_id',
+            foreignField: 'author_id',
+            as: 'reactions'
+        }
+    },
+    {
+        $match: { reactions: { $exists: true }
     }
-  },
-
-  {
-    $lookup: {
-      from: 'reactions',
-      localField: '_id',
-      foreignField: 'author_id',
-      as: 'user_reactions'
+    },
+    {
+        $project: {
+            _id: 0,
+            fullname: 1
+        }
     }
-  },
-
-  {
-    $match: {
-      'user_reactions.0': { $exists: true }
-    }
-  },
-
-  {
-    $project: {
-      _id: 0,
-      name: 1
-    }
-  }
 ])
