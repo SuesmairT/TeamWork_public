@@ -1,0 +1,63 @@
+ //1 уровень сложности: В рамках БД social_network напишите следующие запросы:
+
+
+//Вывести среднюю реакцию по всем публикациям
+
+db.post_reactions.aggregate([
+           { $group: {
+           _id: '$posts',
+            avg_value: { $avg: '$value' }
+        }
+           },
+            {
+        $project: {
+            _id: 0
+        }
+    }
+])
+
+
+//Вывести среднюю реакцию авторов из USA
+db.post_reactions.aggregate([
+                   {
+        $lookup: {
+            from: 'users',
+            localField: 'author_id',
+            foreignField: '_id',
+            as: 'author'
+        }
+    },
+    {
+        $unwind: '$author'
+    },
+   {
+        $match: {
+            'author.country': 'USA'
+        }
+    },
+    {
+        $group: {
+            _id: null,
+            average_value: { $avg: '$value' }
+        }
+    }
+
+])
+//Увеличить баланс всех не заблокированных юзеров на 0.5%
+db.users.updateMany(
+    {  is_blocked: { $ne: true }
+    },
+    {
+        $mul: { balance: 1.005 },
+
+    }
+)
+
+
+
+//Вывести ко-во реакций с оценкой 4
+db.post_reactions.aggregate([
+        { $match: { value: { $eq: 4}  }},
+         { $count: 'total' }
+
+])
